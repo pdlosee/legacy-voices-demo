@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,7 +20,7 @@
     <script>
         let questions = JSON.parse(sessionStorage.getItem('questions'));
         let responses = JSON.parse(sessionStorage.getItem('responses')) || [];
-        let questionIndex = responses.length;  // Resume if page is refreshed
+        let questionIndex = responses.length;
 
         if (!questions || questions.length !== 5) {
             alert('No questions found or incorrect number. Please start from the beginning.');
@@ -29,8 +28,8 @@
         }
 
         let recognition;
-        let finalTranscript = responses[questionIndex] || '';  // Restore existing response if resuming
-        document.getElementById('responseText').value = finalTranscript;  // Prefill response box
+        let finalTranscript = responses[questionIndex] || '';
+        document.getElementById('responseText').value = finalTranscript;
 
         function displayQuestion() {
             document.getElementById('questionText').innerText = questions[questionIndex];
@@ -55,7 +54,7 @@
             };
 
             recognition.onend = () => {
-                // Optionally auto-restart (can be disabled for manual start/stop)
+                // Optionally auto-restart or keep manual
             };
 
             recognition.onerror = (event) => {
@@ -78,7 +77,7 @@
 
             questionIndex++;
             if (questionIndex < questions.length) {
-                finalTranscript = '';  // Reset transcript for next question
+                finalTranscript = '';
                 displayQuestion();
                 document.getElementById('responseText').value = responses[questionIndex] || '';
             } else {
