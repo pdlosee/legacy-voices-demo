@@ -1,16 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Legacy Voices - Record Responses</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="record.js"></script>
 </head>
 <body>
     <h1>Legacy Voices - Record Your Answers</h1>
+
     <div id="questionContainer">
-        <p id="questionText" style="font-weight: bold;"></p>
+        <p id="questionText" style="font-weight: bold; font-size: 1.2em; margin: 15px 0;"></p>
     </div>
+
     <textarea id="responseText" rows="5" cols="50" readonly></textarea><br>
     <button onclick="startRecordingQuestion()">🎤 Start Recording</button>
     <button onclick="stopRecordingQuestion()">⏹️ Stop Recording</button>
@@ -18,33 +18,50 @@
 
     <script>
         let questions = JSON.parse(sessionStorage.getItem('questions'));
-        let questionIndex = 0;
-        let responses = [];
+        let responses = JSON.parse(sessionStorage.getItem('responses')) || [];
+        let questionIndex = responses.length;  // Resume from the last saved point if needed
 
         if (!questions || questions.length !== 5) {
-            alert('No questions found or incorrect number. Please start from the beginning.');
+            alert('No questions found or incorrect number of questions. Please start from the beginning.');
             window.location.href = 'questions.html';
         }
 
         let recognition;
 
+        // Function to display the current question and clear response area
         function displayQuestion() {
-            document.getElementById('questionText').innerText = questions[questionIndex];
-            document.getElementById('responseText').value = '';
+            if (questionIndex < questions.length) {
+                document.getElementById('questionText').innerText = questions[questionIndex];
+                document.getElementById('responseText').value = '';
+            } else {
+                saveAndGoToReview();
+            }
         }
 
+        // Speech recognition logic
         function startRecordingQuestion() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             recognition.interimResults = true;
             recognition.lang = 'en-US';
 
+            let finalTranscript = ''; // Accumulate final confirmed speech
+            let interimTranscript = ''; // Show temporary speech
+
             recognition.onresult = (event) => {
-                let transcript = '';
+                interimTranscript = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    transcript += event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + ' ';
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
                 }
-                document.getElementById('responseText').value = transcript;
+                document.getElementById('responseText').value = finalTranscript + interimTranscript;
+            };
+
+            recognition.onerror = (event) => {
+                alert('Speech recognition error: ' + event.error);
             };
 
             recognition.start();
@@ -56,19 +73,28 @@
             }
         }
 
+        // Move to next question
         function nextQuestion() {
-            responses.push(document.getElementById('responseText').value);
+            responses[questionIndex] = document.getElementById('responseText').value.trim();
+            sessionStorage.setItem('responses', JSON.stringify(responses));
 
             questionIndex++;
             if (questionIndex < questions.length) {
                 displayQuestion();
             } else {
-                sessionStorage.setItem('responses', JSON.stringify(responses));
-                window.location.href = 'review.html';
+                saveAndGoToReview();
             }
         }
 
+        // Save responses and go to review page
+        function saveAndGoToReview() {
+            sessionStorage.setItem('responses', JSON.stringify(responses));
+            window.location.href = 'review.html';
+        }
+
+        // Initialize the first question display on page load
         displayQuestion();
     </script>
+
 </body>
 </html>
