@@ -3,11 +3,6 @@ let recognition;
 let finalTranscript = "";
 
 function startRecording() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Your browser does not support Web Speech API. Please use Chrome or Edge.');
-        return;
-    }
-
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.continuous = true;
