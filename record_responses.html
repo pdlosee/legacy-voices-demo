@@ -8,21 +8,25 @@
 </head>
 <body>
     <h1>Legacy Voices - Record Your Answers</h1>
-    <p id="questionText"></p>
-    <textarea id="responseText" rows="3" cols="50" readonly></textarea><br>
+    <div id="questionContainer">
+        <p id="questionText" style="font-weight: bold;"></p>
+    </div>
+    <textarea id="responseText" rows="5" cols="50" readonly></textarea><br>
     <button onclick="startRecordingQuestion()">🎤 Start Recording</button>
     <button onclick="stopRecordingQuestion()">⏹️ Stop Recording</button>
     <button onclick="nextQuestion()">Next Question</button>
+
     <script>
         let questions = JSON.parse(sessionStorage.getItem('questions'));
-        if (!questions) {
-            alert('No questions found. Please start from the beginning.');
+        let questionIndex = 0;
+        let responses = [];
+
+        if (!questions || questions.length !== 5) {
+            alert('No questions found or incorrect number. Please start from the beginning.');
             window.location.href = 'questions.html';
         }
 
         let recognition;
-        let questionIndex = 0;
-        let responses = [];
 
         function displayQuestion() {
             document.getElementById('questionText').innerText = questions[questionIndex];
@@ -54,6 +58,7 @@
 
         function nextQuestion() {
             responses.push(document.getElementById('responseText').value);
+
             questionIndex++;
             if (questionIndex < questions.length) {
                 displayQuestion();
