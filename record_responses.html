@@ -1,92 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Legacy Voices - Record Responses</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <h1>Legacy Voices - Record Your Answers</h1>
+let recognition;
+let finalTranscript = '';  // Persistent across restarts
+let isRestarting = false;  // Track auto-restarts
 
-    <div id="questionContainer">
-        <p id="questionText" style="font-weight: bold; font-size: 1.2em; margin: 15px 0;"></p>
-    </div>
+function startRecordingQuestion() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
 
-    <textarea id="responseText" rows="5" cols="50"></textarea><br>
-    <button onclick="startRecordingQuestion()">🎤 Start Recording</button>
-    <button onclick="stopRecordingQuestion()">⏹️ Stop Recording</button>
-    <button onclick="nextQuestion()">Next Question</button>
-
-    <script>
-        let questions = JSON.parse(sessionStorage.getItem('questions'));
-        let responses = JSON.parse(sessionStorage.getItem('responses')) || [];
-        let questionIndex = responses.length;  // Resume if page is refreshed
-
-        if (!questions || questions.length !== 5) {
-            alert('No questions found or incorrect number. Please start from the beginning.');
-            window.location.href = 'questions.html';
-        }
-
-        let recognition;
-        let finalTranscript = '';  // This holds the full transcript across all recording sessions for each question.
-
-        function displayQuestion() {
-            document.getElementById('questionText').innerText = questions[questionIndex];
-            document.getElementById('responseText').value = responses[questionIndex] || '';  // Preload if resuming
-            finalTranscript = responses[questionIndex] || '';  // Load into transcript variable for accumulation
-        }
-
-        function startRecordingQuestion() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-
-            recognition.onresult = (event) => {
-                let interimTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript + ' ';
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
-                    }
-                }
-                document.getElementById('responseText').value = finalTranscript + interimTranscript;
-            };
-
-            recognition.onerror = (event) => {
-                alert('Speech recognition error: ' + event.error);
-            };
-
-            recognition.start();
-        }
-
-        function stopRecordingQuestion() {
-            if (recognition) {
-                recognition.stop();
-            }
-        }
-
-        function nextQuestion() {
-            responses[questionIndex] = document.getElementById('responseText').value.trim();
-            sessionStorage.setItem('responses', JSON.stringify(responses));
-
-            questionIndex++;
-            if (questionIndex < questions.length) {
-                finalTranscript = '';  // Reset for the new question
-                displayQuestion();
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript + ' ';
             } else {
-                saveAndGoToReview();
+                interimTranscript += event.results[i][0].transcript;
             }
         }
+        document.getElementById('responseText').value = finalTranscript + interimTranscript;
+    };
 
-        function saveAndGoToReview() {
-            sessionStorage.setItem('responses', JSON.stringify(responses));
-            window.location.href = 'review.html';
+    recognition.onend = () => {
+        if (isRestarting) {
+            return;  // Prevent recursive restarts
         }
+        // Auto-restart after pause
+        isRestarting = true;
+        setTimeout(() => {
+            if (recognition) {
+                startRecordingQuestion();
+                isRestarting = false;
+            }
+        }, 500);  // Short delay before restarting
+    };
 
-        // Initialize on page load
-        displayQuestion();
-    </script>
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'no-speech' || event.error === 'aborted') {
+            // Normal pauses may trigger 'no-speech' so we handle it gently
+            recognition.stop();  // Ensure clean restart
+            setTimeout(() => startRecordingQuestion(), 500);
+        } else {
+            alert('Speech recognition error: ' + event.error);
+        }
+    };
 
-</body>
-</html>
+    recognition.start();
+}
+
+function stopRecordingQuestion() {
+    if (recognition) {
+        recognition.stop();
+    }
+}
