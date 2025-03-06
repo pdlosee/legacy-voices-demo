@@ -53,9 +53,21 @@
                 document.getElementById('responseText').value = finalTranscript + interimTranscript;
             };
 
+            recognition.onend = () => {
+                setTimeout(() => {
+                    if (recognition) {
+                        startRecordingQuestion();
+                    }
+                }, 500);  // Auto-restart after pause
+            };
+
             recognition.onerror = (event) => {
                 console.error('Speech recognition error:', event.error);
-                alert('Speech recognition error: ' + event.error);
+                if (event.error === 'no-speech' || event.error === 'aborted') {
+                    setTimeout(() => startRecordingQuestion(), 500);
+                } else {
+                    alert('Speech recognition error: ' + event.error);
+                }
             };
 
             recognition.start();
