@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,7 +58,7 @@
                     if (recognition) {
                         startRecordingQuestion();
                     }
-                }, 500);
+                }, 500);  // Auto-restart after pause
             };
 
             recognition.onerror = (event) => {
@@ -80,18 +81,15 @@
         }
 
         function nextQuestion() {
-            // Save current response
             responses[questionIndex] = document.getElementById('responseText').value.trim();
             sessionStorage.setItem('responses', JSON.stringify(responses));
 
-            // Move to next question
             questionIndex++;
             if (questionIndex < questions.length) {
                 finalTranscript = '';
                 displayQuestion();
                 document.getElementById('responseText').value = responses[questionIndex] || '';
 
-                // Automatically start recording for the next question
                 setTimeout(startRecordingQuestion, 500);
 
             } else {
@@ -100,10 +98,8 @@
             }
         }
 
-        // Initialize first question and auto-start
         displayQuestion();
         setTimeout(startRecordingQuestion, 500);
-
     </script>
 </body>
 </html>
