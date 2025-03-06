@@ -1,9 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Legacy Voices - Record Responses</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="record.js"></script>
 </head>
 <body>
     <h1>Legacy Voices - Record Your Answers</h1>
@@ -51,10 +51,6 @@
                     }
                 }
                 document.getElementById('responseText').value = finalTranscript + interimTranscript;
-            };
-
-            recognition.onend = () => {
-                // Optionally auto-restart or keep manual
             };
 
             recognition.onerror = (event) => {
