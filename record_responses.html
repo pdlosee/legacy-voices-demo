@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +12,6 @@
     </div>
 
     <textarea id="responseText" rows="5" cols="50"></textarea><br>
-    <button onclick="startRecordingQuestion()">🎤 Start Recording</button>
     <button onclick="stopRecordingQuestion()">⏹️ Stop Recording</button>
     <button onclick="nextQuestion()">Next Question</button>
 
@@ -29,6 +27,7 @@
 
         let recognition;
         let finalTranscript = responses[questionIndex] || '';
+
         document.getElementById('responseText').value = finalTranscript;
 
         function displayQuestion() {
@@ -58,7 +57,7 @@
                     if (recognition) {
                         startRecordingQuestion();
                     }
-                }, 500);  // Auto-restart after pause
+                }, 500);
             };
 
             recognition.onerror = (event) => {
@@ -76,25 +75,35 @@
         function stopRecordingQuestion() {
             if (recognition) {
                 recognition.stop();
+                recognition = null;
             }
         }
 
         function nextQuestion() {
+            // Save current response
             responses[questionIndex] = document.getElementById('responseText').value.trim();
             sessionStorage.setItem('responses', JSON.stringify(responses));
 
+            // Move to next question
             questionIndex++;
             if (questionIndex < questions.length) {
                 finalTranscript = '';
                 displayQuestion();
                 document.getElementById('responseText').value = responses[questionIndex] || '';
+
+                // Automatically start recording for the next question
+                setTimeout(startRecordingQuestion, 500);
+
             } else {
                 sessionStorage.setItem('responses', JSON.stringify(responses));
                 window.location.href = 'review.html';
             }
         }
 
+        // Initialize first question and auto-start
         displayQuestion();
+        setTimeout(startRecordingQuestion, 500);
+
     </script>
 </body>
 </html>
