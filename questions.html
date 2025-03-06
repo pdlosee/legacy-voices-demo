@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Legacy Voices - Questions</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Legacy Voices - Story Questions</h1>
+    <p>Paste the 5 AI-generated questions here:</p>
+    <form id="questionsForm">
+        <label>Question 1:</label><br><input type="text" id="q1" required><br><br>
+        <label>Question 2:</label><br><input type="text" id="q2" required><br><br>
+        <label>Question 3:</label><br><input type="text" id="q3" required><br><br>
+        <label>Question 4:</label><br><input type="text" id="q4" required><br><br>
+        <label>Question 5:</label><br><input type="text" id="q5" required><br><br>
+        <button type="button" onclick="startQuestionnaire()">Start Recording Responses</button>
+    </form>
+
+    <script>
+        function startQuestionnaire() {
+            const questions = [];
+            for (let i = 1; i <= 5; i++) {
+                questions.push(document.getElementById('q' + i).value);
+            }
+            sessionStorage.setItem('questions', JSON.stringify(questions));
+            window.location.href = 'record_responses.html';
+        }
+    </script>
+</body>
+</html>
