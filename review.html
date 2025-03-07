@@ -1,28 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Legacy Voices - Review Responses</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Review Final Story</title>
+    <script>
+        window.onload = function() {
+            const finalStory = sessionStorage.getItem('finalStory');
+            document.getElementById('finalStoryContainer').innerText = finalStory;
+        };
+    </script>
 </head>
 <body>
-    <h1>Legacy Voices - Review Your Responses</h1>
-    <div id="reviewContent"></div>
-    <script>
-        let questions = JSON.parse(sessionStorage.getItem('questions'));
-        let responses = JSON.parse(sessionStorage.getItem('responses'));
-
-        if (!questions || !responses) {
-            alert('No responses found. Please start from the beginning.');
-            window.location.href = 'index.html';
-        }
-
-        let content = "";
-        for (let i = 0; i < questions.length; i++) {
-            content += `<p><strong>Q${i+1}: ${questions[i]}</strong></p>`;
-            content += `<p>${responses[i]}</p><hr>`;
-        }
-        document.getElementById('reviewContent').innerHTML = content;
-    </script>
+    <h1>Your Final Story</h1>
+    <div id="finalStoryContainer"></div>
 </body>
 </html>
