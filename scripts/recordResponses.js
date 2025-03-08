@@ -31,14 +31,15 @@ function startRecording() {
     recognition.lang = 'en-US';
 
     recognition.onresult = (event) => {
-        let interimTranscript = '';  
+        let finalTranscript = document.getElementById('responseBox').value;  // Keep existing text
 
-        for (let i = 0; i < event.results.length; i++) {
-            interimTranscript += event.results[i][0].transcript;
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript + " "; // ✅ Add finalized words
+            }
         }
 
-        // ✅ Preserve previous text instead of resetting it
-        document.getElementById('responseBox').value += interimTranscript;
+        document.getElementById('responseBox').value = finalTranscript; // ✅ Update only finalized text
     };
 
     recognition.onend = () => {
@@ -78,9 +79,9 @@ function generateFinalStory() {
     const storySummary = localStorage.getItem("storySummary") || "";
     const responses = JSON.parse(localStorage.getItem("responses") || "[]");
 
-    // ✅ Ensure responses are captured correctly before sending
-    if (!storySummary || responses.length < 5) {
-        alert("Error: Missing story summary or responses. Please try again.");
+    // ✅ Double-check that all responses are captured before sending
+    if (!storySummary.trim() || responses.length < 5 || responses.includes("")) {
+        alert("Error: Missing story summary or some responses are empty. Please try again.");
         return;
     }
 
