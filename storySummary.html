@@ -1,14 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Capture Story Summary</title>
-    <script src="scripts/storySummary.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legacy Voices - Capture Your Story</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Ensure styles are correctly linked -->
 </head>
 <body>
-    <h1>Capture Your Story Summary</h1>
-    <textarea id="storySummaryInput" rows="10" cols="50"></textarea><br>
-    <button onclick="startRecording()">Start Recording</button>
-    <button onclick="stopRecording()">Stop Recording</button>
-    <button onclick="submitStorySummary()">Submit Story Summary</button>
+    <h1>Legacy Voices - Capture Your Story</h1>
+    
+    <p>Please share a short summary of your story. You can type it or use voice recording.</p>
+    
+    <textarea id="storyInput" placeholder="Speak or type your story here..." rows="6" cols="50"></textarea>
+    
+    <div>
+        <button onclick="startRecording()">Start Recording</button>
+        <button onclick="stopRecording()">Stop Recording</button>
+        <button onclick="submitStorySummary()">Submit Story Summary</button>
+    </div>
+    
+    <script src="scripts/storySummary.js"></script> <!-- Ensure correct script path -->
 </body>
 </html>

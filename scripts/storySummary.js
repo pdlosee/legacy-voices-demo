@@ -1,20 +1,33 @@
 let recognition;
-let storyTranscript = '';
+
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("✅ Page fully loaded, script executing...");
+});
 
 function startRecording() {
+    const storyInput = document.getElementById("storyInput");
+    
+    if (!storyInput) {
+        console.error("❌ ERROR: Element with ID 'storyInput' not found.");
+        alert("Error: The story input field is missing. Please reload the page.");
+        return;
+    }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
     recognition.onresult = (event) => {
-        let finalTranscript = document.getElementById('storyInput').value; // Keep existing text
+        let finalTranscript = storyInput.value;  // Keep existing text
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
                 finalTranscript += event.results[i][0].transcript + " ";
             }
         }
-        document.getElementById('storyInput').value = finalTranscript; // ✅ Update text field with transcript
+
+        storyInput.value = finalTranscript; // ✅ Update text field with transcript
     };
 
     recognition.onend = () => {
