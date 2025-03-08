@@ -24,19 +24,26 @@ function submitStorySummary() {
     const storySummary = document.getElementById('storySummaryInput').value;
     sessionStorage.setItem('storySummary', storySummary);
 
-    fetch('https://legacy-voices-backend.onrender.com/generate-questions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storySummary: storySummary })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.questions) {
-            sessionStorage.setItem('questions', JSON.stringify(data.questions));
-            window.location.href = 'recordResponses.html';
-        } else {
-            alert('Failed to generate questions');
-        }
-    })
-    .catch(err => console.error('Error contacting backend:', err));
+   fetch('https://legacy-voices-backend.onrender.com/generate-questions', {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ storySummary })
+})
+.then(response => response.json())
+.then(data => {
+    if (data.questions) {
+        console.log("Questions received:", data.questions);  // ✅ Debugging step
+        
+        // ✅ Fix: Store questions in localStorage
+        localStorage.setItem("generatedQuestions", JSON.stringify(data.questions));
+        console.log("Questions saved to localStorage."); // ✅ Confirm storage
+
+        // ✅ Move to the next page only AFTER saving the questions
+        window.location.href = "recordResponses.html";
+    } else {
+        alert("Error: No questions received.");
+    }
+})
+.catch(error => console.error("Error contacting backend:", error));
+
 }
