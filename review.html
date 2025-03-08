@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Review Final Story</title>
-    <script>
-        window.onload = function() {
-            const finalStory = sessionStorage.getItem('finalStory');
-            document.getElementById('finalStoryContainer').innerText = finalStory;
-        };
-    </script>
+    <meta charset="UTF-8">
+    <title>Your Legacy Story</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Your Final Story</h1>
-    <div id="finalStoryContainer"></div>
+    <h1>Your Legacy Story</h1>
+    <p id="finalStory">Loading story...</p>
+    <br>
+    <button onclick="window.location.href='index.html'">Back to Home</button>
+
+    <script>
+        document.getElementById("finalStory").innerText = localStorage.getItem("finalStory") || "No story available.";
+    </script>
 </body>
 </html>

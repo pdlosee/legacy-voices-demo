@@ -1,4 +1,3 @@
-
 let questions = [];
 let currentQuestionIndex = 0;
 let recognition;
@@ -19,9 +18,9 @@ function displayCurrentQuestion() {
         document.getElementById('currentQuestion').innerText = questions[currentQuestionIndex];
         document.getElementById('responseBox').value = '';  // Clear previous response
     } else {
-        alert('All questions answered! Returning to main page.');
+        alert('All questions answered! Generating your story...');
         saveResponses();
-        window.location.href = 'index.html';  // Adjust if your actual return page is different
+        generateFinalStory();  // ✅ New function to send responses to backend
     }
 }
 
@@ -40,7 +39,10 @@ function startRecording() {
     };
 
     recognition.onend = () => {
-        console.log('Recording stopped.');
+        console.log("Speech recognition stopped. Restarting...");
+        if (currentQuestionIndex < questions.length) {
+            recognition.start();  // ✅ Auto-restart if more questions remain
+        }
     };
 
     recognition.start();
@@ -66,6 +68,28 @@ function saveCurrentResponse() {
 
 function saveResponses() {
     console.log('All responses saved:', localStorage.getItem('responses'));
+}
+
+// ✅ NEW FUNCTION: Sends responses to backend and generates the final story
+function generateFinalStory() {
+    const storySummary = localStorage.getItem("storySummary");
+    const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+
+    fetch('https://legacy-voices-backend.onrender.com/generate-story', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storySummary, responses })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.finalStory) {
+            localStorage.setItem("finalStory", data.finalStory);
+            window.location.href = "review.html";  // ✅ Redirects to the final story page
+        } else {
+            alert("Error: Story could not be generated.");
+        }
+    })
+    .catch(error => console.error("Error contacting backend:", error));
 }
 
 window.onload = loadQuestions;
