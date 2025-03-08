@@ -76,14 +76,43 @@ function saveResponses() {
 
 // ✅ NEW FUNCTION: Sends responses to backend and generates the final story
 function generateFinalStory() {
-    const storySummary = localStorage.getItem("storySummary") || "";
-    const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+    let storySummary = localStorage.getItem("storySummary");
+    let responses = JSON.parse(localStorage.getItem("responses") || "[]");
 
-    // ✅ Double-check that all responses are captured before sending
-    if (!storySummary.trim() || responses.length < 5 || responses.includes("")) {
-        alert("Error: Missing story summary or some responses are empty. Please try again.");
+    console.log("Retrieved story summary:", storySummary);
+    console.log("Retrieved responses:", responses);
+
+    // ✅ Debugging: Ensure values are not null
+    if (!storySummary) {
+        alert("Error: Story summary not found. Please return and submit your story again.");
         return;
     }
+    if (!Array.isArray(responses) || responses.length < 5 || responses.some(r => !r.trim())) {
+        alert("Error: Some responses are missing or empty. Please answer all questions.");
+        return;
+    }
+
+    fetch('https://legacy-voices-backend.onrender.com/generate-story', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storySummary, responses })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Story Generation Response:", data);
+        if (data.finalStory) {
+            localStorage.setItem("finalStory", data.finalStory);
+            window.location.href = "review.html";  // ✅ Redirects to final story page
+        } else {
+            alert("Error: Story could not be generated. Please try again.");
+        }
+    })
+    .catch(error => {
+        console.error("Error contacting backend:", error);
+        alert("Server error: Unable to generate the story.");
+    });
+}
+
 
     fetch('https://legacy-voices-backend.onrender.com/generate-story', {
         method: "POST",
