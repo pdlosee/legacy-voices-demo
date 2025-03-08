@@ -3,11 +3,19 @@ let isRecording = false;
 let finalTranscript = "";
 
 function startRecording() {
-    if (isRecording) return; // Prevent duplicate instances
+    if (isRecording) {
+        console.log("⚠️ Already recording, ignoring duplicate start request.");
+        return;
+    }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("❌ Speech recognition not supported in this browser.");
+        return;
+    }
+
     recognition = new SpeechRecognition();
-    recognition.continuous = true;  // ✅ Keeps recording even with pauses
+    recognition.continuous = true;  // ✅ Keeps listening even with pauses
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -21,24 +29,27 @@ function startRecording() {
         
         for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript + " "; // ✅ Finalized words
+                finalTranscript += event.results[i][0].transcript + " "; // ✅ Save finalized words
             } else {
-                interimTranscript += event.results[i][0].transcript; // ✅ Live words
+                interimTranscript += event.results[i][0].transcript; // ✅ Show live words
             }
         }
 
-        document.getElementById('storySummary').value = finalTranscript + interimTranscript; // ✅ Show live + finalized text
+        document.getElementById('storySummary').value = finalTranscript + interimTranscript; // ✅ Update the text field
     };
 
     recognition.onend = () => {
-        console.log("⚠️ Speech recognition ended, restarting...");
-        if (isRecording) recognition.start();  // ✅ Auto-restart when paused
+        console.log("⚠️ Speech recognition ended.");
+        if (isRecording) {
+            console.log("🔄 Restarting speech recognition...");
+            recognition.start(); // ✅ Auto-restart if recording flag is still true
+        }
     };
 
     recognition.onerror = (event) => {
         console.error("❌ Speech Recognition Error:", event.error);
         if (event.error === "no-speech" || event.error === "network") {
-            recognition.start();  // ✅ Restart in case of temporary errors
+            recognition.start();  // ✅ Restart if minor error
         }
     };
 
@@ -52,6 +63,7 @@ function stopRecording() {
         console.log("⏹️ Voice recording stopped.");
     }
 }
+
 
 
 
