@@ -76,7 +76,15 @@ function saveResponses() {
 
 // ✅ NEW FUNCTION: Sends responses to backend and generates the final story
 function generateFinalStory() {
-    let storySummary = localStorage.getItem("storySummary");
+    let storySummary = localStorage.getItem("storySummary") || "";
+console.log("DEBUG: Retrieved story summary:", storySummary);
+
+// Ensure story summary is properly set
+if (!storySummary.trim()) {
+    alert("Error: Story summary not found. Please return and submit your story again.");
+    return;
+}
+
     let responses = JSON.parse(localStorage.getItem("responses") || "[]");
 
     console.log("Retrieved story summary:", storySummary);
