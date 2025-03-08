@@ -77,18 +77,16 @@ function saveResponses() {
 // ✅ NEW FUNCTION: Ensures the story summary is retrieved before sending
 function generateFinalStory() {
     let storySummary = localStorage.getItem("storySummary");
+    let responses = JSON.parse(localStorage.getItem("responses") || "[]");
 
     if (!storySummary || storySummary.trim() === "") {
         console.error("❌ ERROR: Story summary not found in localStorage!");
         alert("Error: Story summary not found. Please return and submit your story again.");
         return;
-    } else {
-        console.log("✅ DEBUG: Story summary retrieved successfully:", storySummary);
     }
 
-    let responses = JSON.parse(localStorage.getItem("responses") || "[]");
-
     if (!Array.isArray(responses) || responses.length < 5 || responses.some(r => !r.trim())) {
+        console.error("❌ ERROR: Some responses are missing or empty.");
         alert("Error: Some responses are missing or empty. Please answer all questions.");
         return;
     }
@@ -101,9 +99,14 @@ function generateFinalStory() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ storySummary, responses })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
-        console.log("Story Generation Response:", data);
+        console.log("✅ Story Generation Response:", data);
         if (data.finalStory) {
             localStorage.setItem("finalStory", data.finalStory);
             window.location.href = "review.html";  // ✅ Redirects to final story page
@@ -112,9 +115,10 @@ function generateFinalStory() {
         }
     })
     .catch(error => {
-        console.error("Error contacting backend:", error);
-        alert("Server error: Unable to generate the story.");
+        console.error("❌ ERROR contacting backend:", error);
+        alert("❌ Server error: Unable to generate the story.");
     });
 }
+
 
 window.onload = loadQuestions;
