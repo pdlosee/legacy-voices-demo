@@ -74,31 +74,27 @@ function saveResponses() {
     console.log('All responses saved:', localStorage.getItem('responses'));
 }
 
-// ✅ NEW FUNCTION: Sends responses to backend and generates the final story
+// ✅ NEW FUNCTION: Ensures the story summary is retrieved before sending
 function generateFinalStory() {
-    let storySummary = localStorage.getItem("storySummary") || "";
-console.log("DEBUG: Retrieved story summary:", storySummary);
+    let storySummary = localStorage.getItem("storySummary");
 
-// Ensure story summary is properly set
-if (!storySummary.trim()) {
-    alert("Error: Story summary not found. Please return and submit your story again.");
-    return;
-}
+    if (!storySummary) {
+        console.log("ERROR: Story summary missing in localStorage!");
+        alert("Error: Story summary not found. Please return and submit your story again.");
+        return;
+    } else {
+        console.log("DEBUG: Story summary retrieved successfully:", storySummary);
+    }
 
     let responses = JSON.parse(localStorage.getItem("responses") || "[]");
 
-    console.log("Retrieved story summary:", storySummary);
-    console.log("Retrieved responses:", responses);
-
-    // ✅ Ensure values are not null before sending
-    if (!storySummary) {
-        alert("Error: Story summary not found. Please return and submit your story again.");
-        return;
-    }
     if (!Array.isArray(responses) || responses.length < 5 || responses.some(r => !r.trim())) {
         alert("Error: Some responses are missing or empty. Please answer all questions.");
         return;
     }
+
+    console.log("DEBUG: Sending request with story summary:", storySummary);
+    console.log("DEBUG: Sending responses:", responses);
 
     fetch('https://legacy-voices-backend.onrender.com/generate-story', {
         method: "POST",
@@ -110,7 +106,7 @@ if (!storySummary.trim()) {
         console.log("Story Generation Response:", data);
         if (data.finalStory) {
             localStorage.setItem("finalStory", data.finalStory);
-            window.location.href = "review.html";  // ✅ Redirect to final story page
+            window.location.href = "review.html";  // ✅ Redirects to final story page
         } else {
             alert("Error: Story could not be generated. Please try again.");
         }
