@@ -78,12 +78,12 @@ function saveResponses() {
 function generateFinalStory() {
     let storySummary = localStorage.getItem("storySummary");
 
-    if (!storySummary) {
-        console.log("ERROR: Story summary missing in localStorage!");
+    if (!storySummary || storySummary.trim() === "") {
+        console.error("❌ ERROR: Story summary not found in localStorage!");
         alert("Error: Story summary not found. Please return and submit your story again.");
         return;
     } else {
-        console.log("DEBUG: Story summary retrieved successfully:", storySummary);
+        console.log("✅ DEBUG: Story summary retrieved successfully:", storySummary);
     }
 
     let responses = JSON.parse(localStorage.getItem("responses") || "[]");
@@ -93,8 +93,8 @@ function generateFinalStory() {
         return;
     }
 
-    console.log("DEBUG: Sending request with story summary:", storySummary);
-    console.log("DEBUG: Sending responses:", responses);
+    console.log("✅ DEBUG: Sending request with story summary:", storySummary);
+    console.log("✅ DEBUG: Sending responses:", responses);
 
     fetch('https://legacy-voices-backend.onrender.com/generate-story', {
         method: "POST",
