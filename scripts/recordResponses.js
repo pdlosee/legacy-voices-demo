@@ -31,11 +31,14 @@ function startRecording() {
     recognition.lang = 'en-US';
 
     recognition.onresult = (event) => {
-        currentTranscript = '';  // Reset for fresh capture
+        let interimTranscript = '';  
+
         for (let i = 0; i < event.results.length; i++) {
-            currentTranscript += event.results[i][0].transcript;
+            interimTranscript += event.results[i][0].transcript;
         }
-        document.getElementById('responseBox').value = currentTranscript;  // Live update
+
+        // ✅ Preserve previous text instead of resetting it
+        document.getElementById('responseBox').value += interimTranscript;
     };
 
     recognition.onend = () => {
@@ -72,8 +75,14 @@ function saveResponses() {
 
 // ✅ NEW FUNCTION: Sends responses to backend and generates the final story
 function generateFinalStory() {
-    const storySummary = localStorage.getItem("storySummary");
+    const storySummary = localStorage.getItem("storySummary") || "";
     const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+
+    // ✅ Ensure responses are captured correctly before sending
+    if (!storySummary || responses.length < 5) {
+        alert("Error: Missing story summary or responses. Please try again.");
+        return;
+    }
 
     fetch('https://legacy-voices-backend.onrender.com/generate-story', {
         method: "POST",
@@ -84,12 +93,15 @@ function generateFinalStory() {
     .then(data => {
         if (data.finalStory) {
             localStorage.setItem("finalStory", data.finalStory);
-            window.location.href = "review.html";  // ✅ Redirects to the final story page
+            window.location.href = "review.html";  // ✅ Redirects to final story page
         } else {
-            alert("Error: Story could not be generated.");
+            alert("Error: Story could not be generated. Please try again.");
         }
     })
-    .catch(error => console.error("Error contacting backend:", error));
+    .catch(error => {
+        console.error("Error contacting backend:", error);
+        alert("Server error: Unable to generate the story.");
+    });
 }
 
 window.onload = loadQuestions;
