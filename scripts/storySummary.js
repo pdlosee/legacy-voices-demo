@@ -54,6 +54,7 @@ function stopRecording() {
 }
 
 
+
 function submitStorySummary() {
     let storySummary = document.getElementById("storyInput").value.trim();
 
