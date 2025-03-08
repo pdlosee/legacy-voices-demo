@@ -20,7 +20,7 @@ function displayCurrentQuestion() {
     } else {
         alert('All questions answered! Generating your story...');
         saveResponses();
-        generateFinalStory();  // ✅ New function to send responses to backend
+        generateFinalStory();  // ✅ Function to send responses to backend
     }
 }
 
@@ -82,7 +82,7 @@ function generateFinalStory() {
     console.log("Retrieved story summary:", storySummary);
     console.log("Retrieved responses:", responses);
 
-    // ✅ Debugging: Ensure values are not null
+    // ✅ Ensure values are not null before sending
     if (!storySummary) {
         alert("Error: Story summary not found. Please return and submit your story again.");
         return;
@@ -102,28 +102,7 @@ function generateFinalStory() {
         console.log("Story Generation Response:", data);
         if (data.finalStory) {
             localStorage.setItem("finalStory", data.finalStory);
-            window.location.href = "review.html";  // ✅ Redirects to final story page
-        } else {
-            alert("Error: Story could not be generated. Please try again.");
-        }
-    })
-    .catch(error => {
-        console.error("Error contacting backend:", error);
-        alert("Server error: Unable to generate the story.");
-    });
-}
-
-
-    fetch('https://legacy-voices-backend.onrender.com/generate-story', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storySummary, responses })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.finalStory) {
-            localStorage.setItem("finalStory", data.finalStory);
-            window.location.href = "review.html";  // ✅ Redirects to final story page
+            window.location.href = "review.html";  // ✅ Redirect to final story page
         } else {
             alert("Error: Story could not be generated. Please try again.");
         }
