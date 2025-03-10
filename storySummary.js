@@ -1,12 +1,12 @@
 let recognition;
 let isRecognizing = false;
-let accumulatedTranscript = ''; // ✅ Stores all transcriptions across restarts
+let accumulatedTranscript = '';
 
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.continuous = false;  // Chrome does not allow true continuous mode
-    recognition.interimResults = true;  // ✅ Enables real-time text display
+    recognition.continuous = false;  // Chrome ignores true continuous mode, but we will manually restart it
+    recognition.interimResults = true;  
     recognition.lang = 'en-US';
 
     recognition.onstart = () => {
@@ -15,33 +15,30 @@ function startRecording() {
     };
 
     recognition.onresult = (event) => {
-        let liveTranscript = '';  // ✅ Holds only current session's text
+        let liveTranscript = '';
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-                accumulatedTranscript += event.results[i][0].transcript + " "; // ✅ Save finalized words
+                accumulatedTranscript += event.results[i][0].transcript + " "; // Append final results
             } else {
-                liveTranscript += event.results[i][0].transcript + " "; // ✅ Show interim words
+                liveTranscript = event.results[i][0].transcript; // Show interim words
             }
         }
 
-        // ✅ Display both accumulated and live interim results immediately
+        // Update text field in real-time
         document.getElementById('storyInput').value = accumulatedTranscript + liveTranscript;
     };
 
     recognition.onend = () => {
-        isRecognizing = false;
         console.log("⚠️ Speech recognition stopped. Restarting...");
+        isRecognizing = false;
 
-        // ✅ Preserve final text and accumulate it
-        accumulatedTranscript = document.getElementById('storyInput').value;
-
-        // ✅ Automatically restart recognition with a slight delay
+        // Restart recognition automatically
         setTimeout(() => {
             if (!isRecognizing) {
                 startRecording();
             }
-        }, 500);  // **500ms delay to prevent rapid restart loops**
+        }, 100);  // 100ms delay to ensure smooth restart
     };
 
     recognition.onerror = (event) => {
@@ -51,6 +48,12 @@ function startRecording() {
 
     recognition.start();
 }
+
+// ✅ Auto-starts recording immediately on page load
+window.onload = function () {
+    console.log("🔄 Initializing speech recognition...");
+    startRecording();
+};
 
 function stopRecording() {
     if (recognition) {
@@ -80,7 +83,7 @@ function submitStorySummary() {
         console.log("Backend Response:", data);
         if (data.questions) {
             localStorage.setItem("generatedQuestions", JSON.stringify(data.questions));
-            window.location.href = "recordResponses.html";  // ✅ Redirects to question-answering page
+            window.location.href = "recordResponses.html";  // Redirects to question-answering page
         } else {
             alert("Error: Failed to generate questions. Please try again.");
         }
