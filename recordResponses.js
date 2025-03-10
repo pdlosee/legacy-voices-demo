@@ -1,4 +1,4 @@
-console.log("🚀 Running recordResponses.js - Version 3.1");
+console.log("🚀 Running recordResponses.js - Version 3.2");
 
 if (!window.questions) {
     window.questions = [];
@@ -8,7 +8,10 @@ if (typeof window.currentQuestionIndex === 'undefined') {
     window.currentQuestionIndex = 0;
 }
 
-let recognition;
+if (typeof window.recognition === 'undefined') {  // ✅ Ensure only one declaration
+    window.recognition = null;
+}
+
 let finalTranscript = "";
 
 function loadQuestions() {
@@ -35,12 +38,16 @@ function displayCurrentQuestion() {
 }
 
 function startRecording() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
+    if (window.recognition) {
+        window.recognition.stop();
+    }
 
-    recognition.onresult = (event) => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    window.recognition = new SpeechRecognition();
+    window.recognition.interimResults = true;
+    window.recognition.lang = "en-US";
+
+    window.recognition.onresult = (event) => {
         let interimTranscript = "";
         for (let i = 0; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
@@ -52,19 +59,19 @@ function startRecording() {
         document.getElementById("responseBox").value = finalTranscript + interimTranscript;
     };
 
-    recognition.onend = () => {
+    window.recognition.onend = () => {
         console.log("🎙️ Speech recognition stopped. Restarting...");
         if (window.currentQuestionIndex < window.questions.length) {
-            recognition.start();
+            window.recognition.start();
         }
     };
 
-    recognition.start();
+    window.recognition.start();
 }
 
 function stopRecording() {
-    if (recognition) {
-        recognition.stop();
+    if (window.recognition) {
+        window.recognition.stop();
     }
 }
 
