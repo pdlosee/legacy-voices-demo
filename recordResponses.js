@@ -1,17 +1,24 @@
-let questions = [];  // ✅ Ensure there's only ONE declaration
+if (!window.questions) {  // ✅ Ensures 'questions' is not re-declared
+    window.questions = [];
+}
+
 let currentQuestionIndex = 0;
 let recognition;
 let currentTranscript = '';
 
 function loadQuestions() {
     const storedQuestions = localStorage.getItem('generatedQuestions');
+    console.log("📌 Loaded Questions from Storage:", storedQuestions);  // ✅ Debugging line
+
     if (storedQuestions) {
         questions = JSON.parse(storedQuestions);
         displayCurrentQuestion();
     } else {
         console.error('❌ No questions found! Check if they were generated and saved properly.');
+        alert('No questions found. Please return to the story summary page and submit your story again.');
     }
 }
+
 
 
 
