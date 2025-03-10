@@ -74,51 +74,43 @@ function saveResponses() {
     console.log('All responses saved:', localStorage.getItem('responses'));
 }
 
-// ✅ NEW FUNCTION: Ensures the story summary is retrieved before sending
+// ✅ NEW FUNCTION: Sends responses to backend and generates the final story
 function generateFinalStory() {
     let storySummary = localStorage.getItem("storySummary");
     let responses = JSON.parse(localStorage.getItem("responses") || "[]");
 
-    if (!storySummary || storySummary.trim() === "") {
-        console.error("❌ ERROR: Story summary not found in localStorage!");
+    console.log("Retrieved story summary:", storySummary);
+    console.log("Retrieved responses:", responses);
+
+    // ✅ Ensure values are not null before sending
+    if (!storySummary) {
         alert("Error: Story summary not found. Please return and submit your story again.");
         return;
     }
-
     if (!Array.isArray(responses) || responses.length < 5 || responses.some(r => !r.trim())) {
-        console.error("❌ ERROR: Some responses are missing or empty.");
         alert("Error: Some responses are missing or empty. Please answer all questions.");
         return;
     }
-
-    console.log("✅ DEBUG: Sending request with story summary:", storySummary);
-    console.log("✅ DEBUG: Sending responses:", responses);
 
     fetch('https://legacy-voices-backend.onrender.com/generate-story', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ storySummary, responses })
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log("✅ Story Generation Response:", data);
+        console.log("Story Generation Response:", data);
         if (data.finalStory) {
             localStorage.setItem("finalStory", data.finalStory);
-            window.location.href = "review.html";  // ✅ Redirects to final story page
+            window.location.href = "review.html";  // ✅ Redirect to final story page
         } else {
             alert("Error: Story could not be generated. Please try again.");
         }
     })
     .catch(error => {
-        console.error("❌ ERROR contacting backend:", error);
-        alert("❌ Server error: Unable to generate the story.");
+        console.error("Error contacting backend:", error);
+        alert("Server error: Unable to generate the story.");
     });
 }
-
 
 window.onload = loadQuestions;
