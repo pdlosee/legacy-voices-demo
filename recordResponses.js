@@ -1,3 +1,4 @@
+let questions = [];  // ✅ Ensure there's only ONE declaration
 let currentQuestionIndex = 0;
 let recognition;
 let currentTranscript = '';
