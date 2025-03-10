@@ -1,15 +1,10 @@
 let recognition;
-
-let recognition;
-let isRecognizing = false;  // ✅ Tracks if speech recognition is running
-
-let recognition;
 let isRecognizing = false;
 
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.continuous = false;  // ❌ Disable continuous mode (we will restart it manually)
+    recognition.continuous = false;  // 🚨 Chrome limits continuous mode—so we manually restart
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -31,13 +26,14 @@ function startRecording() {
     recognition.onend = () => {
         isRecognizing = false;
         console.log("⚠️ Speech recognition stopped.");
-        
-        // ✅ Simulate button press: Fully stop and restart it
+
+        // ✅ Only restart if recording was active
         setTimeout(() => {
-            console.log("🔄 Auto-restarting speech recognition...");
-            stopRecording();  // **Manually trigger stop**
-            startRecording();  // **Manually trigger start**
-        }, 500);  // **Short delay to prevent conflicts**
+            if (!isRecognizing) {
+                console.log("🔄 Restarting speech recognition...");
+                startRecording();
+            }
+        }, 1000); // **Deliberate 1s delay to avoid conflicts**
     };
 
     recognition.onerror = (event) => {
@@ -53,6 +49,7 @@ function stopRecording() {
         recognition.stop();
     }
 }
+
 
 
 
