@@ -1,11 +1,19 @@
 let recognition;
 
+let recognition;
+let isRecognizing = false;  // ✅ Tracks if speech recognition is running
+
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.continuous = true;  // ✅ Keeps listening after pauses
     recognition.interimResults = true;
     recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+        isRecognizing = true;  // ✅ Mark that recognition is running
+        console.log("🎤 Speech recognition started.");
+    };
 
     recognition.onresult = (event) => {
         let transcript = document.getElementById('storyInput').value;
@@ -17,22 +25,27 @@ function startRecording() {
         document.getElementById('storyInput').value = transcript;
     };
 
-    recognition.onerror = (event) => {
-        console.error("⚠️ Speech Recognition Error:", event.error);
-        setTimeout(() => {
-            recognition.start();  // 🔄 Force restart even on errors
-        }, 500);
+    recognition.onend = () => {
+        isRecognizing = false;  // ❌ Mark that recognition stopped
+        console.log("⚠️ Speech recognition stopped.");
     };
 
-    recognition.onend = () => {
-        console.log("⚠️ Speech recognition stopped. Restarting...");
-        setTimeout(() => {
-            recognition.start(); // ✅ Force restart instantly
-        }, 500);
+    recognition.onerror = (event) => {
+        console.error("❌ Speech Recognition Error:", event.error);
+        isRecognizing = false;  
     };
 
     recognition.start();
+
+    // ✅ Force restart every 1 second if speech recognition stops
+    setInterval(() => {
+        if (!isRecognizing) {
+            console.log("🔄 Auto-restarting speech recognition...");
+            recognition.start();
+        }
+    }, 1000);  // **Reduced delay from 2000ms to 1000ms**
 }
+
 
 
 function stopRecording() {
