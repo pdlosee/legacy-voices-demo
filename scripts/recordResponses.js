@@ -1,107 +1,127 @@
-let questions = [];
-let currentQuestionIndex = 0;
-let recognition;
+console.log("🚀 Running recordResponses.js - Version 3.3");
+
+if (!window.questions) {
+    window.questions = [];
+}
+
+if (typeof window.currentQuestionIndex === 'undefined') {
+    window.currentQuestionIndex = 0;
+}
+
+if (typeof window.recognition === 'undefined') {  
+    window.recognition = null;
+}
+
 let finalTranscript = "";
 
-// ✅ Load the generated questions
 function loadQuestions() {
-    const storedQuestions = localStorage.getItem('generatedQuestions');
+    const storedQuestions = localStorage.getItem("generatedQuestions");
+    console.log("📌 Loaded Questions from Storage:", storedQuestions);
+    
     if (storedQuestions) {
-        questions = JSON.parse(storedQuestions);
+        window.questions = JSON.parse(storedQuestions);
         displayCurrentQuestion();
     } else {
-        alert('No questions found. Please return to the story summary page and submit your story again.');
+        console.log("❌ No questions found! Check if they were generated and saved properly.");
     }
 }
 
-// ✅ Display only the current question & clear response box
 function displayCurrentQuestion() {
-    if (currentQuestionIndex < questions.length) {
-        document.getElementById('currentQuestion').innerText = questions[currentQuestionIndex];
-        document.getElementById('responseBox').value = '';  // Clear response box for new input
-        finalTranscript = "";  // Reset transcript storage
+    if (window.currentQuestionIndex < window.questions.length) {
+        document.getElementById("currentQuestion").innerText = window.questions[window.currentQuestionIndex];
+        document.getElementById("responseBox").value = "";
     } else {
-        alert('All questions answered! Generating your story...');
+        console.log("✅ All questions answered! Generating your story...");
         saveResponses();
-        generateFinalStory();  // ✅ Send responses to backend
+        generateFinalStory();
     }
 }
 
-// ✅ Start recording (only for the current question)
 function startRecording() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    if (window.recognition) {
+        window.recognition.stop();
+    }
 
-    recognition.onresult = (event) => {
-        let tempTranscript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    window.recognition = new SpeechRecognition();
+    window.recognition.interimResults = true;
+    window.recognition.lang = "en-US";
+
+    window.recognition.onresult = (event) => {
+        let interimTranscript = "";
+        for (let i = 0; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-                tempTranscript += event.results[i][0].transcript + " ";
+                finalTranscript += event.results[i][0].transcript + " ";
+            } else {
+                interimTranscript += event.results[i][0].transcript + " ";
             }
         }
-        finalTranscript = tempTranscript.trim(); // ✅ Store only the current answer
-        document.getElementById('responseBox').value = finalTranscript; // ✅ Update text box with latest input
+        document.getElementById("responseBox").value = finalTranscript + interimTranscript;
     };
 
-    recognition.start();
+    window.recognition.onend = () => {
+        console.log("🎙️ Speech recognition stopped. Restarting...");
+        if (window.currentQuestionIndex < window.questions.length) {
+            window.recognition.start();
+        }
+    };
+
+    window.recognition.start();
 }
 
-// ✅ Stop recording
 function stopRecording() {
-    if (recognition) {
-        recognition.stop();
+    if (window.recognition) {
+        window.recognition.stop();
     }
 }
 
-// ✅ Store only the current response & move to next question
 function nextQuestion() {
     saveCurrentResponse();
-    currentQuestionIndex++;
+    window.currentQuestionIndex++;
     displayCurrentQuestion();
 }
 
-// ✅ Store the response in `localStorage`
 function saveCurrentResponse() {
-    let responses = JSON.parse(localStorage.getItem('responses') || '[]');
-    responses[currentQuestionIndex] = finalTranscript;  // ✅ Store only the new response
-    localStorage.setItem('responses', JSON.stringify(responses));
+    const responses = JSON.parse(localStorage.getItem("responses") || "[]");
+    responses[window.currentQuestionIndex] = document.getElementById("responseBox").value;
+    localStorage.setItem("responses", JSON.stringify(responses));
 }
 
-// ✅ Send all responses to backend after last question
+function saveResponses() {
+    console.log("✅ All responses saved:", localStorage.getItem("responses"));
+}
+
 function generateFinalStory() {
     let storySummary = localStorage.getItem("storySummary");
-
-    if (!storySummary) {
-        alert("Error: Story summary not found. Please return and submit your story again.");
-        return;
-    }
-
     let responses = JSON.parse(localStorage.getItem("responses") || "[]");
 
-    if (!Array.isArray(responses) || responses.length < 5 || responses.some(r => !r.trim())) {
-        alert("Error: Some responses are missing or empty. Please answer all questions.");
+    if (!storySummary) {
+        console.log("❌ ERROR: Story summary not found in localStorage!");
         return;
     }
 
-    fetch('https://legacy-voices-backend.onrender.com/generate-story', {
+    if (!Array.isArray(responses) || responses.length < 5 || responses.some(r => !r.trim())) {
+        console.log("❌ ERROR: Some responses are missing or empty.");
+        return;
+    }
+
+    fetch("https://legacy-voices-backend.onrender.com/generate-story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ storySummary, responses })
     })
     .then(response => response.json())
     .then(data => {
+        console.log("📌 Story Generation Response:", data);
         if (data.finalStory) {
             localStorage.setItem("finalStory", data.finalStory);
-            window.location.href = "review.html";  // ✅ Redirect to final story review page
+            window.location.href = "review.html";
         } else {
-            alert("Error: Story could not be generated. Please try again.");
+            console.log("❌ ERROR: Story could not be generated.");
         }
     })
     .catch(error => {
-        console.error("Error contacting backend:", error);
-        alert("Server error: Unable to generate the story.");
+        console.error("❌ Error contacting backend:", error);
     });
 }
 
