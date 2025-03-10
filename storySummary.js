@@ -1,23 +1,19 @@
 let recognition;
 let finalTranscript = "";
-let isRecording = false;  // ✅ Track whether recording should continue
+let isManuallyStopping = false;  // ✅ Track if user wants to stop
+let isRestarting = false;        // ✅ Track if auto-restart is happening
 
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.interimResults = true;  // ✅ Allows real-time transcription
-    recognition.continuous = true;      // ✅ Forces continuous listening
+    recognition.interimResults = true;
+    recognition.continuous = false;  // ✅ Chrome does not allow true continuous mode
     recognition.lang = 'en-US';
 
-    isRecording = true;  // ✅ Ensure we track recording state
-
-    recognition.onstart = () => {
-        console.log("🎤 Speech recognition started...");
-    };
+    console.log("🎤 Speech recognition started...");
 
     recognition.onresult = (event) => {
         let interimTranscript = "";
-        console.log("🎤 Speech Event Triggered:", event);
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
@@ -32,7 +28,6 @@ function startRecording() {
         let combinedTranscript = finalTranscript + interimTranscript;
         console.log("📝 Updating Text Field:", combinedTranscript);
 
-        // ✅ Live updates
         let textBox = document.getElementById("storySummaryInput");
         if (textBox) {
             textBox.value = combinedTranscript;
@@ -44,9 +39,12 @@ function startRecording() {
     recognition.onend = () => {
         console.log("⏸️ Speech recognition stopped.");
 
-        if (isRecording) {
-            console.log("🔄 Restarting speech recognition...");
-            setTimeout(() => recognition.start(), 500); // ✅ Auto-restart after 500ms
+        if (!isManuallyStopping) {
+            console.log("🔄 Simulating user restart...");
+            setTimeout(() => {
+                console.log("🎤 Restarting speech recognition...");
+                restartRecognition();  // ✅ Simulate button press
+            }, 500);  // ✅ Small delay before restart
         }
     };
 
@@ -58,10 +56,22 @@ function startRecording() {
 }
 
 function stopRecording() {
-    isRecording = false;  // ✅ Stop tracking recording state
+    isManuallyStopping = true;  // ✅ Prevent auto-restart
     if (recognition) {
         recognition.stop();
         console.log("🛑 Speech recognition manually stopped.");
+    }
+}
+
+function restartRecognition() {
+    if (!isRestarting) {
+        isRestarting = true;
+        console.log("🚀 Simulating button press to restart recording...");
+
+        // ✅ Simulate a user pressing the button
+        document.getElementById("startRecordingBtn").click();
+
+        setTimeout(() => { isRestarting = false; }, 1000);  // ✅ Prevent loop overload
     }
 }
 
@@ -86,7 +96,7 @@ function submitStorySummary() {
             localStorage.setItem("storySummary", storySummary);
             localStorage.setItem("generatedQuestions", JSON.stringify(data.questions));
             console.log("✅ Questions received:", data.questions);
-            window.location.href = "recordResponses.html"; // ✅ Redirect to question responses
+            window.location.href = "recordResponses.html"; // ✅ Redirect to next step
         } else {
             alert("Error: Could not generate questions. Please try again.");
         }
