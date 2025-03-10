@@ -28,6 +28,7 @@ function startRecording() {
 }
 
 
+
 function stopRecording() {
     if (recognition) {
         recognition.stop();
