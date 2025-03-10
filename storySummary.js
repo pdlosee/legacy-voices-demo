@@ -1,90 +1,54 @@
-console.log("🚀 Running storySummary.js - Version 3.0");
+console.log("🚀 Running storySummary.js - Version 3.1");
+
 let recognition;
 let finalTranscript = "";
-let isManuallyStopping = false;  // ✅ Track if user wants to stop
-let isRestarting = false;        // ✅ Track if auto-restart is happening
+let isManuallyStopping = false; 
+let isRestarting = false;
 
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.interimResults = true;
-    recognition.continuous = false;  // ✅ Chrome does not allow true continuous mode
-    recognition.lang = 'en-US';
-
-    console.log("🎤 Speech recognition started...");
+    recognition.lang = "en-US";
 
     recognition.onresult = (event) => {
         let interimTranscript = "";
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        for (let i = 0; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-                console.log("✅ Finalized:", event.results[i][0].transcript);
                 finalTranscript += event.results[i][0].transcript + " ";
             } else {
-                console.log("✏️ Interim:", event.results[i][0].transcript);
-                interimTranscript += event.results[i][0].transcript;
+                interimTranscript += event.results[i][0].transcript + " ";
             }
         }
-
-        let combinedTranscript = finalTranscript + interimTranscript;
-        console.log("📝 Updating Text Field:", combinedTranscript);
-
-        let textBox = document.getElementById("storySummaryInput");
-        if (textBox) {
-            textBox.value = combinedTranscript;
-        } else {
-            console.error("❌ ERROR: Textbox not found!");
-        }
+        document.getElementById("storyInput").value = finalTranscript + interimTranscript;
     };
 
     recognition.onend = () => {
-        console.log("⏸️ Speech recognition stopped.");
-
         if (!isManuallyStopping) {
-            console.log("🔄 Simulating user restart...");
-            setTimeout(() => {
-                console.log("🎤 Restarting speech recognition...");
-                restartRecognition();  // ✅ Simulate button press
-            }, 500);  // ✅ Small delay before restart
+            console.log("🎙️ Speech recognition stopped. Restarting...");
+            recognition.start();
         }
-    };
-
-    recognition.onerror = (event) => {
-        console.error("❌ Speech recognition error:", event.error);
     };
 
     recognition.start();
 }
 
 function stopRecording() {
-    isManuallyStopping = true;  // ✅ Prevent auto-restart
+    isManuallyStopping = true;
     if (recognition) {
         recognition.stop();
-        console.log("🛑 Speech recognition manually stopped.");
-    }
-}
-
-function restartRecognition() {
-    if (!isRestarting) {
-        isRestarting = true;
-        console.log("🚀 Simulating button press to restart recording...");
-
-        // ✅ Simulate a user pressing the button
-        document.getElementById("startRecordingBtn").click();
-
-        setTimeout(() => { isRestarting = false; }, 1000);  // ✅ Prevent loop overload
     }
 }
 
 function submitStorySummary() {
-    let storySummary = document.getElementById("storySummaryInput").value.trim();
-
+    let storySummary = document.getElementById("storyInput").value.trim();
     if (!storySummary) {
-        alert("Please enter or record a story summary before submitting.");
+        alert("Please enter or record your story summary.");
         return;
     }
 
-    console.log("📨 Sending story summary:", storySummary);
+    localStorage.setItem("storySummary", storySummary);
+    console.log("🚀 Sending Story Summary to Backend:", storySummary);
 
     fetch("https://legacy-voices-backend.onrender.com/generate-questions", {
         method: "POST",
@@ -93,13 +57,12 @@ function submitStorySummary() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.questions && data.questions.length === 5) {
-            localStorage.setItem("storySummary", storySummary);
+        console.log("📌 Backend Response:", data);
+        if (data.questions) {
             localStorage.setItem("generatedQuestions", JSON.stringify(data.questions));
-            console.log("✅ Questions received:", data.questions);
-            window.location.href = "recordResponses.html"; // ✅ Redirect to next step
+            window.location.href = "recordResponses.html";
         } else {
-            alert("Error: Could not generate questions. Please try again.");
+            alert("Error: No questions received from backend. Please try again.");
         }
     })
     .catch(error => {
