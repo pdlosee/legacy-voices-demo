@@ -43,7 +43,7 @@ function startRecording() {
             console.log("🔄 Auto-restarting speech recognition...");
             recognition.start();
         }
-    }, 1000);  // **Reduced delay from 2000ms to 1000ms**
+    }, 500);  // **Reduced delay from 2000ms to 1000ms**
 }
 
 
