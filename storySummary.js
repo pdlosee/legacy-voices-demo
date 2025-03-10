@@ -1,5 +1,4 @@
 let recognition;
-let storyTranscript = '';
 
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -20,33 +19,49 @@ function startRecording() {
 
     recognition.onend = () => {
         console.log("⚠️ Speech recognition stopped. Restarting...");
-        recognition.start(); // ✅ Auto-restart after pause
+        setTimeout(() => {
+            if (recognition) recognition.start(); // ✅ Auto-restart after pause
+        }, 500);
     };
 
     recognition.start();
 }
 
-
-
-
 function stopRecording() {
     if (recognition) {
         recognition.stop();
+        console.log("🛑 Speech recognition manually stopped.");
     }
 }
 
 function submitStorySummary() {
-    let storySummary = document.getElementById("storyInput").value.trim();
-
+    const storySummary = document.getElementById("storyInput").value.trim();
+    
     if (!storySummary) {
-        alert("Please enter a valid story summary.");
+        alert("Please enter or record a story summary before submitting.");
         return;
     }
 
-    // ✅ Store the summary in localStorage
     localStorage.setItem("storySummary", storySummary);
-    console.log("✅ DEBUG: Story summary stored:", storySummary);
+    console.log("📜 Story summary saved:", storySummary);
 
-    // ✅ Redirect to next step
-    window.location.href = "recordResponses.html";
+    fetch("https://legacy-voices-backend.onrender.com/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storySummary }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.questions) {
+            localStorage.setItem("generatedQuestions", JSON.stringify(data.questions));
+            console.log("✅ Questions received:", data.questions);
+            window.location.href = "recordResponses.html";
+        } else {
+            alert("Error: No questions were generated. Please try again.");
+        }
+    })
+    .catch(error => {
+        console.error("❌ Error contacting backend:", error);
+        alert("Server error: Unable to generate questions.");
+    });
 }
