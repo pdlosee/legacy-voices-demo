@@ -4,6 +4,7 @@ let storyTranscript = '';
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
+    recognition.continuous = true;  // ✅ Keeps recording after pauses
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -19,13 +20,12 @@ function startRecording() {
 
     recognition.onend = () => {
         console.log("⚠️ Speech recognition stopped. Restarting...");
-        setTimeout(() => {
-            if (recognition) recognition.start(); // ✅ Auto-restart after pause
-        }, 500);
+        recognition.start(); // ✅ Auto-restart after pause
     };
 
     recognition.start();
 }
+
 
 
 
