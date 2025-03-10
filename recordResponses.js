@@ -1,10 +1,14 @@
-if (!window.questions) {  // ✅ Ensures 'questions' is not re-declared
+if (!window.questions) {  // ✅ Prevent multiple declarations
     window.questions = [];
 }
 
-let currentQuestionIndex = 0;
+if (typeof window.currentQuestionIndex === 'undefined') {  // ✅ Prevent redeclaration
+    window.currentQuestionIndex = 0;
+}
+
 let recognition;
 let currentTranscript = '';
+
 
 function loadQuestions() {
     const storedQuestions = localStorage.getItem('generatedQuestions');
