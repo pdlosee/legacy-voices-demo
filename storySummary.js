@@ -6,7 +6,7 @@ function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.continuous = false;  // 🚨 Chrome does not allow true continuous mode
-    recognition.interimResults = true;
+    recognition.interimResults = true;  // ✅ Enables real-time text display
     recognition.lang = 'en-US';
 
     recognition.onstart = () => {
@@ -15,28 +15,29 @@ function startRecording() {
     };
 
     recognition.onresult = (event) => {
-        let newTranscript = '';
+        let liveTranscript = '';  // ✅ Holds only current session's text
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-                newTranscript += event.results[i][0].transcript + " ";
-            }
+            liveTranscript += event.results[i][0].transcript + " ";
         }
 
-        // ✅ Append new text to the previously accumulated text
-        accumulatedTranscript += newTranscript;
-        document.getElementById('storyInput').value = accumulatedTranscript;
+        // ✅ Display live updates while speaking
+        document.getElementById('storyInput').value = accumulatedTranscript + liveTranscript;
     };
 
     recognition.onend = () => {
         isRecognizing = false;
         console.log("⚠️ Speech recognition stopped. Restarting immediately...");
-        
+
+        // ✅ Preserve final text and accumulate it
+        accumulatedTranscript = document.getElementById('storyInput').value;
+
         // ✅ Automatically restart recognition with a short delay
         setTimeout(() => {
             if (!isRecognizing) {
                 startRecording();
             }
-        }, 100);  // **100ms delay to avoid recursion issues**
+        }, 100);  // **100ms delay to prevent infinite recursion**
     };
 
     recognition.onerror = (event) => {
@@ -46,6 +47,13 @@ function startRecording() {
 
     recognition.start();
 }
+
+function stopRecording() {
+    if (recognition) {
+        recognition.stop();
+    }
+}
+
 
 function stopRecording() {
     if (recognition) {
