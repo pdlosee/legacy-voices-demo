@@ -1,14 +1,19 @@
 let recognition;
 let finalTranscript = "";
-let isRecording = false; // Track if recording should continue
+let isRecording = false;  // ✅ Track whether recording should continue
 
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.interimResults = true;  // ✅ Enable real-time transcription
+    recognition.interimResults = true;  // ✅ Allows real-time transcription
+    recognition.continuous = true;      // ✅ Forces continuous listening
     recognition.lang = 'en-US';
 
-    isRecording = true; // Mark recording as active
+    isRecording = true;  // ✅ Ensure we track recording state
+
+    recognition.onstart = () => {
+        console.log("🎤 Speech recognition started...");
+    };
 
     recognition.onresult = (event) => {
         let interimTranscript = "";
@@ -27,7 +32,7 @@ function startRecording() {
         let combinedTranscript = finalTranscript + interimTranscript;
         console.log("📝 Updating Text Field:", combinedTranscript);
 
-        // ✅ Real-time update
+        // ✅ Live updates
         let textBox = document.getElementById("storySummaryInput");
         if (textBox) {
             textBox.value = combinedTranscript;
@@ -50,11 +55,10 @@ function startRecording() {
     };
 
     recognition.start();
-    console.log("🎤 Speech recognition started...");
 }
 
 function stopRecording() {
-    isRecording = false; // Mark recording as stopped
+    isRecording = false;  // ✅ Stop tracking recording state
     if (recognition) {
         recognition.stop();
         console.log("🛑 Speech recognition manually stopped.");
@@ -82,7 +86,7 @@ function submitStorySummary() {
             localStorage.setItem("storySummary", storySummary);
             localStorage.setItem("generatedQuestions", JSON.stringify(data.questions));
             console.log("✅ Questions received:", data.questions);
-            window.location.href = "recordResponses.html"; // Redirect to question responses
+            window.location.href = "recordResponses.html"; // ✅ Redirect to question responses
         } else {
             alert("Error: Could not generate questions. Please try again.");
         }
