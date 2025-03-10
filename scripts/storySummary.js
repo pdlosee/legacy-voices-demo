@@ -1,30 +1,40 @@
+console.log("🚀 Running storySummary.js - Version 3.1");
+
 let recognition;
-let storyTranscript = '';
+let finalTranscript = "";
+let isManuallyStopping = false; 
+let isRestarting = false;
 
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = "en-US";
 
     recognition.onresult = (event) => {
-        let finalTranscript = document.getElementById('storyInput').value; // Keep existing text
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        let interimTranscript = "";
+        for (let i = 0; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
                 finalTranscript += event.results[i][0].transcript + " ";
+            } else {
+                interimTranscript += event.results[i][0].transcript + " ";
             }
         }
-        document.getElementById('storyInput').value = finalTranscript; // ✅ Update text field with transcript
+        document.getElementById("storyInput").value = finalTranscript + interimTranscript;
     };
 
     recognition.onend = () => {
-        console.log("Speech recognition stopped.");
+        if (!isManuallyStopping) {
+            console.log("🎙️ Speech recognition stopped. Restarting...");
+            recognition.start();
+        }
     };
 
     recognition.start();
 }
 
 function stopRecording() {
+    isManuallyStopping = true;
     if (recognition) {
         recognition.stop();
     }
@@ -32,16 +42,31 @@ function stopRecording() {
 
 function submitStorySummary() {
     let storySummary = document.getElementById("storyInput").value.trim();
-
     if (!storySummary) {
-        alert("Please enter a valid story summary.");
+        alert("Please enter or record your story summary.");
         return;
     }
 
-    // ✅ Store the summary in localStorage
     localStorage.setItem("storySummary", storySummary);
-    console.log("✅ DEBUG: Story summary stored:", storySummary);
+    console.log("🚀 Sending Story Summary to Backend:", storySummary);
 
-    // ✅ Redirect to next step
-    window.location.href = "recordResponses.html";
+    fetch("https://legacy-voices-backend.onrender.com/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storySummary })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("📌 Backend Response:", data);
+        if (data.questions) {
+            localStorage.setItem("generatedQuestions", JSON.stringify(data.questions));
+            window.location.href = "recordResponses.html";
+        } else {
+            alert("Error: No questions received from backend. Please try again.");
+        }
+    })
+    .catch(error => {
+        console.error("❌ Error contacting backend:", error);
+        alert("Server error: Unable to generate questions.");
+    });
 }
