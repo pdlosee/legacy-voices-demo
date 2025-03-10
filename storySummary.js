@@ -5,20 +5,23 @@ let isRecording = false; // Track if recording should continue
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.interimResults = true;
+    recognition.interimResults = true;  // ✅ Enable real-time transcription
     recognition.lang = 'en-US';
 
     isRecording = true; // Mark recording as active
 
     recognition.onresult = (event) => {
         let interimTranscript = "";
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript + " ";
+                finalTranscript += event.results[i][0].transcript + " ";  // ✅ Save final words permanently
             } else {
-                interimTranscript += event.results[i][0].transcript;
+                interimTranscript += event.results[i][0].transcript;  // ✅ Show interim results in real-time
             }
         }
+
+        // ✅ Update text field immediately with both final and live words
         document.getElementById("storySummaryInput").value = finalTranscript + interimTranscript;
     };
 
