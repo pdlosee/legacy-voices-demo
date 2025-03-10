@@ -3,15 +3,18 @@ let recognition;
 let recognition;
 let isRecognizing = false;  // ✅ Tracks if speech recognition is running
 
+let recognition;
+let isRecognizing = false;
+
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.continuous = true;  // ✅ Keeps listening after pauses
+    recognition.continuous = false;  // ❌ Disable continuous mode (we will restart it manually)
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
     recognition.onstart = () => {
-        isRecognizing = true;  // ✅ Mark that recognition is running
+        isRecognizing = true;
         console.log("🎤 Speech recognition started.");
     };
 
@@ -26,25 +29,31 @@ function startRecording() {
     };
 
     recognition.onend = () => {
-        isRecognizing = false;  // ❌ Mark that recognition stopped
+        isRecognizing = false;
         console.log("⚠️ Speech recognition stopped.");
+        
+        // ✅ Simulate button press: Fully stop and restart it
+        setTimeout(() => {
+            console.log("🔄 Auto-restarting speech recognition...");
+            stopRecording();  // **Manually trigger stop**
+            startRecording();  // **Manually trigger start**
+        }, 500);  // **Short delay to prevent conflicts**
     };
 
     recognition.onerror = (event) => {
         console.error("❌ Speech Recognition Error:", event.error);
-        isRecognizing = false;  
+        isRecognizing = false;
     };
 
     recognition.start();
-
-    // ✅ Force restart every 1 second if speech recognition stops
-    setInterval(() => {
-        if (!isRecognizing) {
-            console.log("🔄 Auto-restarting speech recognition...");
-            recognition.start();
-        }
-    }, 500);  // **Reduced delay from 2000ms to 1000ms**
 }
+
+function stopRecording() {
+    if (recognition) {
+        recognition.stop();
+    }
+}
+
 
 
 
