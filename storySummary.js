@@ -1,10 +1,11 @@
 let recognition;
 let isRecognizing = false;
+let accumulatedTranscript = ''; // ✅ Stores all transcriptions across restarts
 
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.continuous = false;  // 🚨 Chrome limits continuous mode—so we restart manually
+    recognition.continuous = false;  // 🚨 Chrome does not allow true continuous mode
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -14,33 +15,28 @@ function startRecording() {
     };
 
     recognition.onresult = (event) => {
-        let transcript = document.getElementById('storyInput').value;
+        let newTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-                transcript += event.results[i][0].transcript + " ";
+                newTranscript += event.results[i][0].transcript + " ";
             }
         }
-        document.getElementById('storyInput').value = transcript;
-    };
 
-    recognition.onspeechend = () => {
-        console.log("⏸️ No speech detected for 5 seconds, continuing to listen...");
-        setTimeout(() => {
-            if (isRecognizing) {
-                recognition.start();  // ✅ Restart without stopping!
-            }
-        }, 5000); // **Extends pause time to 5 seconds**
+        // ✅ Append new text to the previously accumulated text
+        accumulatedTranscript += newTranscript;
+        document.getElementById('storyInput').value = accumulatedTranscript;
     };
 
     recognition.onend = () => {
         isRecognizing = false;
-        console.log("⚠️ Speech recognition stopped.");
+        console.log("⚠️ Speech recognition stopped. Restarting immediately...");
+        
+        // ✅ Automatically restart recognition with a short delay
         setTimeout(() => {
             if (!isRecognizing) {
-                console.log("🔄 Restarting speech recognition...");
                 startRecording();
             }
-        }, 1000); // **Short delay before restarting**
+        }, 100);  // **100ms delay to avoid recursion issues**
     };
 
     recognition.onerror = (event) => {
@@ -50,6 +46,13 @@ function startRecording() {
 
     recognition.start();
 }
+
+function stopRecording() {
+    if (recognition) {
+        recognition.stop();
+    }
+}
+
 
 function stopRecording() {
     if (recognition) {
