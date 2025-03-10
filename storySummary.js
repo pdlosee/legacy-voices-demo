@@ -12,17 +12,28 @@ function startRecording() {
 
     recognition.onresult = (event) => {
         let interimTranscript = "";
+        console.log("🎤 Speech Event Triggered:", event);
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript + " ";  // ✅ Save final words permanently
+                console.log("✅ Finalized:", event.results[i][0].transcript);
+                finalTranscript += event.results[i][0].transcript + " ";
             } else {
-                interimTranscript += event.results[i][0].transcript;  // ✅ Show interim results in real-time
+                console.log("✏️ Interim:", event.results[i][0].transcript);
+                interimTranscript += event.results[i][0].transcript;
             }
         }
 
-        // ✅ Update text field immediately with both final and live words
-        document.getElementById("storySummaryInput").value = finalTranscript + interimTranscript;
+        let combinedTranscript = finalTranscript + interimTranscript;
+        console.log("📝 Updating Text Field:", combinedTranscript);
+
+        // ✅ Real-time update
+        let textBox = document.getElementById("storySummaryInput");
+        if (textBox) {
+            textBox.value = combinedTranscript;
+        } else {
+            console.error("❌ ERROR: Textbox not found!");
+        }
     };
 
     recognition.onend = () => {
