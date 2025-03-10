@@ -3,7 +3,7 @@ let recognition;
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.continuous = true;  // ✅ Keeps recording after pauses
+    recognition.continuous = true;  // ✅ Keeps listening after pauses
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -17,15 +17,23 @@ function startRecording() {
         document.getElementById('storyInput').value = transcript;
     };
 
+    recognition.onerror = (event) => {
+        console.error("⚠️ Speech Recognition Error:", event.error);
+        setTimeout(() => {
+            recognition.start();  // 🔄 Force restart even on errors
+        }, 500);
+    };
+
     recognition.onend = () => {
         console.log("⚠️ Speech recognition stopped. Restarting...");
         setTimeout(() => {
-            if (recognition) recognition.start(); // ✅ Auto-restart after pause
+            recognition.start(); // ✅ Force restart instantly
         }, 500);
     };
 
     recognition.start();
 }
+
 
 function stopRecording() {
     if (recognition) {
