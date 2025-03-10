@@ -1,3 +1,4 @@
+console.log("🚀 Running storySummary.js - Version 3.0");
 let recognition;
 let finalTranscript = "";
 let isManuallyStopping = false;  // ✅ Track if user wants to stop
