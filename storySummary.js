@@ -4,7 +4,7 @@ let isRecognizing = false;
 function startRecording() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.continuous = false;  // 🚨 Chrome limits continuous mode—so we manually restart
+    recognition.continuous = false;  // 🚨 Chrome limits continuous mode—so we restart manually
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -23,17 +23,24 @@ function startRecording() {
         document.getElementById('storyInput').value = transcript;
     };
 
+    recognition.onspeechend = () => {
+        console.log("⏸️ No speech detected for 5 seconds, continuing to listen...");
+        setTimeout(() => {
+            if (isRecognizing) {
+                recognition.start();  // ✅ Restart without stopping!
+            }
+        }, 5000); // **Extends pause time to 5 seconds**
+    };
+
     recognition.onend = () => {
         isRecognizing = false;
         console.log("⚠️ Speech recognition stopped.");
-
-        // ✅ Only restart if recording was active
         setTimeout(() => {
             if (!isRecognizing) {
                 console.log("🔄 Restarting speech recognition...");
                 startRecording();
             }
-        }, 1000); // **Deliberate 1s delay to avoid conflicts**
+        }, 1000); // **Short delay before restarting**
     };
 
     recognition.onerror = (event) => {
@@ -43,6 +50,13 @@ function startRecording() {
 
     recognition.start();
 }
+
+function stopRecording() {
+    if (recognition) {
+        recognition.stop();
+    }
+}
+
 
 function stopRecording() {
     if (recognition) {
