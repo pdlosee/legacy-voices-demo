@@ -1,4 +1,3 @@
-let questions = [];
 let currentQuestionIndex = 0;
 let recognition;
 let currentTranscript = '';
@@ -12,6 +11,7 @@ function loadQuestions() {
         console.error('❌ No questions found! Check if they were generated and saved properly.');
     }
 }
+
 
 
 function displayCurrentQuestion() {
