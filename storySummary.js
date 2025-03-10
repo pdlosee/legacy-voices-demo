@@ -54,62 +54,30 @@ function stopRecording() {
     }
 }
 
-
-function stopRecording() {
-    if (recognition) {
-        recognition.stop();
-    }
-}
-
-
-function stopRecording() {
-    if (recognition) {
-        recognition.stop();
-    }
-}
-
-
-function stopRecording() {
-    if (recognition) {
-        recognition.stop();
-    }
-}
-
-
-
-
-
-function stopRecording() {
-    if (recognition) {
-        recognition.stop();
-        console.log("🛑 Speech recognition manually stopped.");
-    }
-}
-
 function submitStorySummary() {
     const storySummary = document.getElementById("storyInput").value.trim();
-    
+
     if (!storySummary) {
-        alert("Please enter or record a story summary before submitting.");
+        alert("Please enter or record your story summary before submitting.");
         return;
     }
 
+    console.log("Submitting Story Summary:", storySummary);
     localStorage.setItem("storySummary", storySummary);
-    console.log("📜 Story summary saved:", storySummary);
 
     fetch("https://legacy-voices-backend.onrender.com/generate-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storySummary }),
+        body: JSON.stringify({ storySummary })
     })
     .then(response => response.json())
     .then(data => {
+        console.log("Backend Response:", data);
         if (data.questions) {
             localStorage.setItem("generatedQuestions", JSON.stringify(data.questions));
-            console.log("✅ Questions received:", data.questions);
-            window.location.href = "recordResponses.html";
+            window.location.href = "recordResponses.html";  // ✅ Redirects to question-answering page
         } else {
-            alert("Error: No questions were generated. Please try again.");
+            alert("Error: Failed to generate questions. Please try again.");
         }
     })
     .catch(error => {
