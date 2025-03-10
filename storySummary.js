@@ -27,7 +27,7 @@ function startRecording() {
 
         if (isRecording) {
             console.log("🔄 Restarting speech recognition...");
-            recognition.start(); // ✅ Auto-restart
+            setTimeout(() => recognition.start(), 500); // ✅ Auto-restart after 500ms
         }
     };
 
@@ -47,24 +47,15 @@ function stopRecording() {
     }
 }
 
-
-function stopRecording() {
-    if (recognition) {
-        recognition.stop();
-        isRecognizing = false;
-    }
-}
-
 function submitStorySummary() {
-    const storySummary = document.getElementById("storyInput").value.trim();
+    let storySummary = document.getElementById("storySummaryInput").value.trim();
 
     if (!storySummary) {
-        alert("Please enter or record your story summary before submitting.");
+        alert("Please enter or record a story summary before submitting.");
         return;
     }
 
-    console.log("Submitting Story Summary:", storySummary);
-    localStorage.setItem("storySummary", storySummary);
+    console.log("📨 Sending story summary:", storySummary);
 
     fetch("https://legacy-voices-backend.onrender.com/generate-questions", {
         method: "POST",
@@ -73,12 +64,13 @@ function submitStorySummary() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Backend Response:", data);
-        if (data.questions) {
+        if (data.questions && data.questions.length === 5) {
+            localStorage.setItem("storySummary", storySummary);
             localStorage.setItem("generatedQuestions", JSON.stringify(data.questions));
-            window.location.href = "recordResponses.html";  // Redirects to question-answering page
+            console.log("✅ Questions received:", data.questions);
+            window.location.href = "recordResponses.html"; // Redirect to question responses
         } else {
-            alert("Error: Failed to generate questions. Please try again.");
+            alert("Error: Could not generate questions. Please try again.");
         }
     })
     .catch(error => {
