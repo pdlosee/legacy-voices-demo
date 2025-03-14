@@ -13,50 +13,66 @@
 <label for="storySummary">Provide a brief summary of your experience:</label>
 <textarea id="storySummary" placeholder="Example: 'I lost my job and was struggling financially, but something unexpected happened that changed everything.'"></textarea>
 
-<h3>Answer the following questions to expand your story:</h3>
+<button id="generateQuestions">Generate Questions</button>
 
-<div id="questionContainer"></div>
+<div id="questionContainer" style="display: none;">
+    <h3>Answer the following personalized questions:</h3>
+</div>
 
-<button id="submitStory">Submit & Generate Story</button>
+<button id="submitStory" style="display: none;">Submit & Generate Story</button>
 
 <script>
-let questions = [
-    "1. Can you describe the initial thoughts and emotions you experienced when you lost your job and were faced with financial uncertainty?",
-    "2. How did your faith guide your actions and mindset during this challenging time of financial struggle?",
-    "3. Were there any unexpected encounters or events that you now see as divine preparation to help you navigate through this difficult period?",
-    "4. Can you share a specific moment or experience that stands out to you as a miraculous resolution to your financial struggles?",
-    "5. Looking back, how has this experience of overcoming financial hardship and relying on your faith left a lasting impact on your spiritual journey and perspective on challenges in life?"
-];
+document.getElementById("generateQuestions").addEventListener("click", function() {
+    let storySummary = document.getElementById("storySummary").value;
 
-let answers = [];
+    if (storySummary.trim() === "") {
+        alert("Please enter a story summary before generating questions.");
+        return;
+    }
 
-function displayQuestions() {
-    let container = document.getElementById("questionContainer");
-    questions.forEach((question, index) => {
-        let questionLabel = document.createElement("label");
-        questionLabel.innerText = question;
+    fetch("https://legacy-voices-backend.onrender.com/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storySummary: storySummary })
+    })
+    .then(response => response.json())
+    .then(data => {
+        let questionContainer = document.getElementById("questionContainer");
+        questionContainer.innerHTML = "<h3>Answer the following personalized questions:</h3>";
         
-        let answerBox = document.createElement("textarea");
-        answerBox.setAttribute("id", `answer-${index}`);
-        answerBox.setAttribute("placeholder", "Your response here...");
+        data.questions.forEach((question, index) => {
+            let questionLabel = document.createElement("label");
+            questionLabel.innerText = question;
+            
+            let answerBox = document.createElement("textarea");
+            answerBox.setAttribute("id", `answer-${index}`);
+            answerBox.setAttribute("placeholder", "Your response here...");
 
-        container.appendChild(questionLabel);
-        container.appendChild(answerBox);
+            questionContainer.appendChild(questionLabel);
+            questionContainer.appendChild(answerBox);
+        });
+
+        questionContainer.style.display = "block";
+        document.getElementById("submitStory").style.display = "block";
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("There was a problem generating questions. Please try again.");
     });
-}
+});
 
 document.getElementById("submitStory").addEventListener("click", function() {
     let storySummary = document.getElementById("storySummary").value;
-    
+
     let responses = [];
-    for (let i = 0; i < questions.length; i++) {
+    for (let i = 0; i < 5; i++) {
         let response = document.getElementById(`answer-${i}`).value;
         responses.push(response);
     }
 
-    if (storySummary.trim() === "" || responses.some(r => r.trim() === "")) {
-        alert("Please complete all fields before submitting.");
-        return; // ✅ Prevents redirecting if input is incomplete
+    if (responses.some(r => r.trim() === "")) {
+        alert("Please answer all questions before submitting.");
+        return;
     }
 
     fetch("https://legacy-voices-backend.onrender.com/generate-story", {
@@ -70,8 +86,8 @@ document.getElementById("submitStory").addEventListener("click", function() {
     .then(response => response.json())
     .then(data => {
         if (data.finalStory) {
-            localStorage.setItem("generatedStory", data.finalStory);  // ✅ Store story before redirecting
-            window.location.href = "storySummary.html"; // ✅ Only redirects AFTER the story is stored
+            localStorage.setItem("generatedStory", data.finalStory);
+            window.location.href = "storySummary.html";
         } else {
             alert("Error generating story. Please try again.");
         }
@@ -81,9 +97,6 @@ document.getElementById("submitStory").addEventListener("click", function() {
         alert("There was a problem submitting your story. Please try again.");
     });
 });
-
-
-displayQuestions();
 </script>
 
 </body>
