@@ -92,12 +92,15 @@ document.getElementById("generateQuestions").addEventListener("click", function(
 
             let stopButton = document.createElement("button");
             stopButton.innerText = "🛑 Stop Recording";
-            stopButton.setAttribute("onclick", "stopVoiceInput()");
+            stopButton.setAttribute("onclick", `stopVoiceInput()`);
 
-            questionContainer.appendChild(questionLabel);
-            questionContainer.appendChild(answerBox);
-            questionContainer.appendChild(voiceButton);
-            questionContainer.appendChild(stopButton);
+            let containerDiv = document.createElement("div");
+            containerDiv.appendChild(questionLabel);
+            containerDiv.appendChild(answerBox);
+            containerDiv.appendChild(voiceButton);
+            containerDiv.appendChild(stopButton);
+
+            questionContainer.appendChild(containerDiv);
         });
 
         questionContainer.style.display = "block";
