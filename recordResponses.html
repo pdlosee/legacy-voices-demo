@@ -35,7 +35,8 @@ function startVoiceInput(targetId) {
         recognition.lang = 'en-US';
 
         recognition.onresult = function(event) {
-            document.getElementById(targetId).value += " " + event.results[event.results.length - 1][0].transcript;
+            let transcript = event.results[event.results.length - 1][0].transcript;
+            document.getElementById(targetId).value += " " + transcript;
         };
 
         recognition.onend = function() {
