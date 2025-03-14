@@ -41,12 +41,14 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     let generatedStory = localStorage.getItem("generatedStory");
-    if (generatedStory) {
+    if (generatedStory && generatedStory.trim() !== "") {
         document.getElementById("storyText").innerText = generatedStory;
     } else {
-        document.getElementById("storyText").innerText = "Error: No story found. Please return and submit your story.";
+        alert("No story found. Redirecting you to the story input page.");
+        window.location.href = "recordResponses.html";  // ✅ Automatically sends the user back to the correct page
     }
 });
+
 
 document.getElementById("reviseStoryButton").addEventListener("click", function() {
     let originalStory = document.getElementById("storyText").innerText;

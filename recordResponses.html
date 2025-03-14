@@ -54,6 +54,11 @@ document.getElementById("submitStory").addEventListener("click", function() {
         responses.push(response);
     }
 
+    if (storySummary.trim() === "" || responses.some(r => r.trim() === "")) {
+        alert("Please complete all fields before submitting.");
+        return; // ✅ Prevents redirecting if input is incomplete
+    }
+
     fetch("https://legacy-voices-backend.onrender.com/generate-story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,10 +69,19 @@ document.getElementById("submitStory").addEventListener("click", function() {
     })
     .then(response => response.json())
     .then(data => {
-        localStorage.setItem("generatedStory", data.finalStory);
-        window.location.href = "storySummary.html"; // Redirect to story review page
+        if (data.finalStory) {
+            localStorage.setItem("generatedStory", data.finalStory);  // ✅ Store story before redirecting
+            window.location.href = "storySummary.html"; // ✅ Only redirects AFTER the story is stored
+        } else {
+            alert("Error generating story. Please try again.");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("There was a problem submitting your story. Please try again.");
     });
 });
+
 
 displayQuestions();
 </script>
