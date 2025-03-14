@@ -12,7 +12,7 @@
 
 <div id="storyOutput">
     <h2>Your Story</h2>
-    <p id="storyText">Generating your story...</p>
+    <p id="storyText">Loading your story...</p>
 </div>
 
 <h3>Revise Your Story</h3>
@@ -39,6 +39,15 @@
 <button id="reviseStoryButton">Revise My Story</button>
 
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+    let generatedStory = localStorage.getItem("generatedStory");
+    if (generatedStory) {
+        document.getElementById("storyText").innerText = generatedStory;
+    } else {
+        document.getElementById("storyText").innerText = "Error: No story found. Please return and submit your story.";
+    }
+});
+
 document.getElementById("reviseStoryButton").addEventListener("click", function() {
     let originalStory = document.getElementById("storyText").innerText;
     let dialogue = document.getElementById("slider-dialogue").value;
@@ -70,5 +79,3 @@ document.getElementById("reviseStoryButton").addEventListener("click", function(
 
 </body>
 </html>
-
-
