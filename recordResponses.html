@@ -12,6 +12,7 @@
 
 <label for="storySummary">Provide a brief summary of your experience:</label>
 <textarea id="storySummary" placeholder="Example: 'I lost my job and was struggling financially, but something unexpected happened that changed everything.'"></textarea>
+<button onclick="startVoiceInput('storySummary')">🎙️ Start Voice Input</button>
 
 <button id="generateQuestions">Generate Questions</button>
 
@@ -22,6 +23,23 @@
 <button id="submitStory" style="display: none;">Submit & Generate Story</button>
 
 <script>
+// Voice-to-Text Function
+function startVoiceInput(targetId) {
+    let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.start();
+
+    recognition.onresult = function(event) {
+        document.getElementById(targetId).value += " " + event.results[0][0].transcript;
+    };
+
+    recognition.onerror = function(event) {
+        alert("Voice recognition error: " + event.error);
+    };
+}
+
 document.getElementById("generateQuestions").addEventListener("click", function() {
     let storySummary = document.getElementById("storySummary").value;
 
@@ -48,8 +66,13 @@ document.getElementById("generateQuestions").addEventListener("click", function(
             answerBox.setAttribute("id", `answer-${index}`);
             answerBox.setAttribute("placeholder", "Your response here...");
 
+            let voiceButton = document.createElement("button");
+            voiceButton.innerText = "🎙️ Start Voice Input";
+            voiceButton.setAttribute("onclick", `startVoiceInput('answer-${index}')`);
+
             questionContainer.appendChild(questionLabel);
             questionContainer.appendChild(answerBox);
+            questionContainer.appendChild(voiceButton);
         });
 
         questionContainer.style.display = "block";
