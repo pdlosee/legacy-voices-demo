@@ -12,7 +12,7 @@
 
 <label for="storySummary">Provide a brief summary of your experience:</label>
 <textarea id="storySummary" placeholder="Example: 'I lost my job and was struggling financially, but something unexpected happened that changed everything.'"></textarea>
-<button onclick="startVoiceInput('storySummary')">🎙️ Start Voice Input</button>
+<button id="storyVoiceButton">🎙️ Start Voice Input</button>
 <button onclick="stopVoiceInput()">🛑 Stop Recording</button>
 
 <button id="generateQuestions">Generate Questions</button>
@@ -26,31 +26,35 @@
 <script>
 let recognition;
 let isRecording = false;
+let currentTargetId = null; // ✅ Keeps track of which textarea is being recorded
 
 function startVoiceInput(targetId) {
-    if (!recognition) {
-        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.continuous = true; // ✅ Keeps listening even after pauses
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
-
-        recognition.onresult = function(event) {
-            let transcript = event.results[event.results.length - 1][0].transcript;
-            document.getElementById(targetId).value += " " + transcript;
-        };
-
-        recognition.onend = function() {
-            if (isRecording) {
-                recognition.start(); // ✅ Restarts automatically when paused
-            }
-        };
-
-        recognition.onerror = function(event) {
-            alert("Voice recognition error: " + event.error);
-        };
+    if (recognition) {
+        recognition.stop(); // ✅ Stop any existing recognition before starting a new one
     }
 
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.continuous = true; // ✅ Keeps listening even after pauses
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = function(event) {
+        let transcript = event.results[event.results.length - 1][0].transcript;
+        document.getElementById(targetId).value += " " + transcript;
+    };
+
+    recognition.onend = function() {
+        if (isRecording) {
+            recognition.start(); // ✅ Restart if recording is still enabled
+        }
+    };
+
+    recognition.onerror = function(event) {
+        alert("Voice recognition error: " + event.error);
+    };
+
     isRecording = true;
+    currentTargetId = targetId;
     recognition.start();
 }
 
@@ -60,6 +64,11 @@ function stopVoiceInput() {
         recognition.stop(); // ✅ Stops the recognition process
     }
 }
+
+// ✅ Attach voice input for story summary
+document.getElementById("storyVoiceButton").addEventListener("click", function() {
+    startVoiceInput("storySummary");
+});
 
 document.getElementById("generateQuestions").addEventListener("click", function() {
     let storySummary = document.getElementById("storySummary").value;
@@ -89,11 +98,15 @@ document.getElementById("generateQuestions").addEventListener("click", function(
 
             let voiceButton = document.createElement("button");
             voiceButton.innerText = "🎙️ Start Voice Input";
-            voiceButton.setAttribute("onclick", `startVoiceInput('answer-${index}')`);
+            voiceButton.addEventListener("click", function() {
+                startVoiceInput(`answer-${index}`);
+            });
 
             let stopButton = document.createElement("button");
             stopButton.innerText = "🛑 Stop Recording";
-            stopButton.setAttribute("onclick", `stopVoiceInput()`);
+            stopButton.addEventListener("click", function() {
+                stopVoiceInput();
+            });
 
             let containerDiv = document.createElement("div");
             containerDiv.appendChild(questionLabel);
