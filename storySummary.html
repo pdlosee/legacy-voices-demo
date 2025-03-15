@@ -2,82 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legacy Voices - Story Summary</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<h1>Legacy Voices - Your Story</h1>
+<h1>Legacy Voices - Your Story Summary</h1>
 
-<div id="storyOutput">
-    <h2>Your Story</h2>
-    <p id="storyText">Loading your story...</p>
+<div id="storyContainer">
+    <h3 id="generatedStory">Loading story...</h3>
 </div>
 
-<h3>Revise Your Story</h3>
-<p>Use the sliders below to adjust specific aspects of your story. The AI will rewrite it based on your preferences.</p>
+<!-- Character Profile Update Section -->
+<div id="profileUpdateSection">
+    <h3>Update Your Character Profile</h3>
+    <p>AI can analyze your stories and suggest refinements to your profile.</p>
+    <button onclick="requestProfileUpdate()">Check for Updates</button>
+    <div id="profileUpdateMessage"></div>
+    <textarea id="profileUpdateSuggestion" readonly></textarea>
+    <button onclick="acceptProfileUpdate()">Accept Update</button>
+</div>
 
-<label for="slider-dialogue">Natural Conversation (Less ↔ More)</label>
-<input type="range" id="slider-dialogue" min="0" max="10" value="5">
-
-<label for="slider-history">Historical & Cultural Details (Less ↔ More)</label>
-<input type="range" id="slider-history" min="0" max="10" value="5">
-
-<label for="slider-humor">Humor (Less ↔ More)</label>
-<input type="range" id="slider-humor" min="0" max="10" value="5">
-
-<label for="slider-length">Story Length (Shorter ↔ Longer)</label>
-<input type="range" id="slider-length" min="0" max="10" value="5">
-
-<label for="slider-moral">Moral Lessons (Emerge Naturally ↔ Explicitly Stated)</label>
-<input type="range" id="slider-moral" min="0" max="10" value="5">
-
-<label for="custom-note">Custom Notes (Optional)</label>
-<textarea id="custom-note" placeholder="Example: 'Make the dialogue funnier, especially between Dad and the Judge.'"></textarea>
-
-<button id="reviseStoryButton">Revise My Story</button>
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    let generatedStory = localStorage.getItem("generatedStory");
-    if (generatedStory && generatedStory.trim() !== "") {
-        document.getElementById("storyText").innerText = generatedStory;
-    } else {
-        alert("No story found. Redirecting you to the story input page.");
-        window.location.href = "recordResponses.html";  // ✅ Automatically sends the user back to the correct page
-    }
-});
-
-
-document.getElementById("reviseStoryButton").addEventListener("click", function() {
-    let originalStory = document.getElementById("storyText").innerText;
-    let dialogue = document.getElementById("slider-dialogue").value;
-    let history = document.getElementById("slider-history").value;
-    let humor = document.getElementById("slider-humor").value;
-    let length = document.getElementById("slider-length").value;
-    let moral = document.getElementById("slider-moral").value;
-    let customNote = document.getElementById("custom-note").value;
-
-    fetch("https://legacy-voices-backend.onrender.com/revise-story", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            story: originalStory,
-            dialogue: dialogue,
-            history: history,
-            humor: humor,
-            length: length,
-            moral: moral,
-            customNote: customNote
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById("storyText").innerText = data.revisedStory;
-    });
-});
-</script>
-
+<script src="storySummary.js"></script>
 </body>
 </html>
