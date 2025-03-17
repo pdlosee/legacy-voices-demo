@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legacy Voices - Record Your Story</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>Legacy Voices - Tell Your Story</h1>
+
+<label for="storySummary">Provide a brief summary of your experience:</label>
+<textarea id="storySummary" placeholder="Example: 'I lost my job and was struggling financially, but something unexpected happened that changed everything.'"></textarea>
+
+<button id="generateQuestions">Generate Questions</button>
+
+<div id="questionContainer" style="display: none;">
+    <h3>Answer the following personalized questions:</h3>
+</div>
+
+<button id="submitStory" style="display: none;">Submit & Generate Story</button>
+
+<script>
+document.getElementById("generateQuestions").addEventListener("click", function() {
+    let storySummary = document.getElementById("storySummary").value;
+
+    if (storySummary.trim() === "") {
+        alert("Please enter a story summary before generating questions.");
+        return;
+    }
+
+    fetch("https://legacy-voices-backend.onrender.com/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storySummary: storySummary })
+    })
+    .then(response => response.json())
+    .then(data => {
+        let questionContainer = document.getElementById("questionContainer");
+        questionContainer.innerHTML = "<h3>Answer the following personalized questions:</h3>";
+        
+        data.questions.forEach((question, index) => {
+            let questionLabel = document.createElement("label");
+            questionLabel.innerText = question;
+            
+            let answerBox = document.createElement("textarea");
+            answerBox.setAttribute("id", `answer-${index}`);
+            answerBox.setAttribute("placeholder", "Your response here...");
+
+            questionContainer.appendChild(questionLabel);
+            questionContainer.appendChild(answerBox);
+        });
+
+        questionContainer.style.display = "block";
+        document.getElementById("submitStory").style.display = "block";
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("There was a problem generating questions. Please try again.");
+    });
+});
+
+document.getElementById("submitStory").addEventListener("click", function() {
+    let storySummary = document.getElementById("storySummary").value;
+
+    let responses = [];
+    for (let i = 0; i < 5; i++) {
+        let response = document.getElementById(`answer-${i}`).value;
+        responses.push(response);
+    }
+
+    if (responses.some(r => r.trim() === "")) {
+        alert("Please answer all questions before submitting.");
+        return;
+    }
+
+    fetch("https://legacy-voices-backend.onrender.com/generate-story", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            storySummary: storySummary,
+            responses: responses
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.finalStory) {
+            localStorage.setItem("generatedStory", data.finalStory);
+            window.location.href = "storySummary.html";
+        } else {
+            alert("Error generating story. Please try again.");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("There was a problem submitting your story. Please try again.");
+    });
+});
+</script>
+
+</body>
+</html>
